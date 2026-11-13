@@ -10,6 +10,9 @@ from app.seed import SEED_ROWS
 
 
 class Store:
+    # 重试预演的留档、待办与批次是 retry 模块的附属表，不计入业务模块看板。
+    AUX_TABLES = {"retry_preview", "retry_todo", "retry_batch"}
+
     def __init__(self) -> None:
         self._tables: dict[str, list[dict[str, Any]]] = {
             name: [dict(row) for row in rows] for name, rows in SEED_ROWS.items()
@@ -30,6 +33,8 @@ class Store:
     def overview(self) -> dict[str, object]:
         modules: list[dict[str, object]] = []
         for name in self.module_names():
+            if name in self.AUX_TABLES:
+                continue
             rows = self.rows(name)
             modules.append({
                 "name": name,
